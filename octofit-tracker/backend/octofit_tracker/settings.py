@@ -41,6 +41,10 @@ INSTALLED_APPS = [
     "octofit_tracker",
 ]
 
+INSTALLED_APPS += [
+    'tracker_app',
+]
+
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -51,6 +55,8 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+CORS_ALLOW_HEADERS = ["*"]
 
 ROOT_URLCONF = "octofit_tracker.urls"
 
@@ -78,7 +84,7 @@ WSGI_APPLICATION = "octofit_tracker.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
+        "ENGINE": "djongo",
         "NAME": "octofit_db",
         "HOST": "localhost",
         "PORT": 27017,

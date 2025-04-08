@@ -1,13 +1,16 @@
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from django.core.management.base import BaseCommand
-from octofit_tracker.test_data import test_users, test_teams, test_activities, test_leaderboard, test_workouts
+from octofit_tracker.models import User, Team, Activity, Leaderboard, Workout
 from django.conf import settings
 from pymongo import MongoClient
+from datetime import timedelta
+from bson import ObjectId
 
 class Command(BaseCommand):
-    help = 'Populate the database with test data for users, teams, activities, leaderboard, and workouts'
+    help = 'Populate the database with test data for users, teams, activity, leaderboard, and workouts'
+
+    print('DEBUG: populate_db.py is being loaded')
+    print('DEBUG: populate_db.py is being loaded by Django')
+    print('DEBUG: populate_db command is being loaded')
 
     def handle(self, *args, **kwargs):
         # Connect to MongoDB
@@ -21,30 +24,49 @@ class Command(BaseCommand):
         db.leaderboard.drop()
         db.workouts.drop()
 
-        # Populate users
-        for user in test_users:
-            db.users.insert_one(user)
+        # Create users
+        users = [
+            User(email='thundergod@mhigh.edu', name='Thor', age=30),
+            User(email='metalgeek@mhigh.edu', name='Tony Stark', age=35),
+            User(email='zerocool@mhigh.edu', name='Steve Rogers', age=32),
+            User(email='crashoverride@mhigh.edu', name='Natasha Romanoff', age=28),
+            User(email='sleeptoken@mhigh.edu', name='Bruce Banner', age=40),
+        ]
+        User.objects.bulk_create(users)
 
-        # Populate teams
-        for team in test_teams:
-            members = [db.users.find_one({"username": member})["_id"] for member in team["members"]]
-            team["members"] = members
-            db.teams.insert_one(team)
+        # Create teams
+        team = Team(name='Avengers')
+        team.save()
+        team.members.set(users)
 
-        # Populate activities
-        for activity in test_activities:
-            user_id = db.users.find_one({"username": activity["user"]})["_id"]
-            activity["user"] = user_id
-            db.activity.insert_one(activity)
+        # Create activities
+        activities = [
+            Activity(user=users[0], type='Cycling', duration=60, date='2025-04-08'),
+            Activity(user=users[1], type='Crossfit', duration=120, date='2025-04-07'),
+            Activity(user=users[2], type='Running', duration=90, date='2025-04-06'),
+            Activity(user=users[3], type='Strength', duration=30, date='2025-04-05'),
+            Activity(user=users[4], type='Swimming', duration=75, date='2025-04-04'),
+        ]
+        Activity.objects.bulk_create(activities)
 
-        # Populate leaderboard
-        for entry in test_leaderboard:
-            user_id = db.users.find_one({"username": entry["user"]})["_id"]
-            entry["user"] = user_id
-            db.leaderboard.insert_one(entry)
+        # Create leaderboard entries
+        leaderboard_entries = [
+            Leaderboard(user=users[0], score=100),
+            Leaderboard(user=users[1], score=90),
+            Leaderboard(user=users[2], score=95),
+            Leaderboard(user=users[3], score=85),
+            Leaderboard(user=users[4], score=80),
+        ]
+        Leaderboard.objects.bulk_create(leaderboard_entries)
 
-        # Populate workouts
-        for workout in test_workouts:
-            db.workouts.insert_one(workout)
+        # Create workouts
+        workouts = [
+            Workout(name='Cycling Training', description='Training for a road cycling event', duration=60),
+            Workout(name='Crossfit', description='Training for a crossfit competition', duration=120),
+            Workout(name='Running Training', description='Training for a marathon', duration=90),
+            Workout(name='Strength Training', description='Training for strength', duration=30),
+            Workout(name='Swimming Training', description='Training for a swimming competition', duration=75),
+        ]
+        Workout.objects.bulk_create(workouts)
 
         self.stdout.write(self.style.SUCCESS('Successfully populated the database with test data.'))
