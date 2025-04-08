@@ -41,10 +41,6 @@ INSTALLED_APPS = [
     "octofit_tracker",
 ]
 
-INSTALLED_APPS += [
-    'tracker_app',
-]
-
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
